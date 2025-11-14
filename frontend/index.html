@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Adaptive Study Tutor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .hidden {
+            display: none;
+        }
+
+        /* Custom scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-6">
+    <div class="max-w-5xl mx-auto bg-white p-6 rounded-xl shadow-lg">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold">📘 ASTRA</h1>
+            <div class="space-x-4 font-semibold text-gray-600">
+                <a href="#" onclick="showSection('upload-page')" class="text-blue-600 hover:underline">Upload</a>
+                <a href="#" onclick="showSection('tutor-page')" class="hover:underline">Tutor</a>
+                <a href="#" onclick="showSection('argument-checker-page')" class="hover:underline">Argument Checker</a>
+            </div>
+        </div>
+
+        <div id="upload-page" class="active-page">
+            <h2 class="text-xl font-semibold mb-4">Upload Your Lecture Material</h2>
+            <form id="uploadForm" class="mb-6">
+                <div id="drop-area" class="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center relative cursor-pointer hover:bg-gray-50 transition-colors">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m-4-4v4m-4 4h-4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                    <p class="mt-2 text-sm text-gray-600">Drag and drop files here</p>
+                    <p class="text-sm text-gray-600">or</p>
+                    <label for="pdfFile" class="mt-3 inline-block px-4 py-2 bg-blue-600 text-white font-medium text-sm rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer">
+                        Select files
+                    </label>
+                    <input type="file" id="pdfFile" name="file" accept="application/pdf, .txt" class="absolute inset-0 opacity-0 cursor-pointer" style="z-index: 1;">
+                    <p class="mt-2 text-xs text-gray-500">PDF or Text files only</p>
+                </div>
+                <div id="file-status-container" class="mt-4 flex items-center justify-between hidden">
+                    <div class="flex items-center space-x-2">
+                        <svg class="w-5 h-5 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 2a2 2 0 012-2h2.586A1 1 0 0111 4.414L15.586 9a1 1 0 01.414.707V16a1 1 0 01-1 1H6a1 1 0 01-1-1V6a2 2 0 012-2z" clip-rule="evenodd" />
+                            <path fill-rule="evenodd" d="M10 4a1 1 0 00-1 1v2a1 1 0 002 0V5a1 1 0 00-1-1zM9 10a1 1 0 00-1 1v3a1 1 0 102 0v-3a1 1 0 00-1-1z" clip-rule="evenodd" />
+                        </svg>
+                        <span id="file-name" class="font-medium text-gray-700"></span>
+                    </div>
+                    <span id="upload-status" class="text-green-600 font-semibold">Uploaded</span>
+                </div>
+                <button type="submit" class="hidden"></button>
+            </form>
+
+            <h2 class="text-xl font-semibold mt-6">Summary</h2>
+            <div id="summaryContent" class="p-3 bg-gray-50 rounded"></div>
+
+            <h2 class="text-xl font-semibold mt-6">Flashcards</h2>
+            <div id="flashcards" class="space-y-2"></div>
+
+            <h2 class="text-xl font-semibold mt-6">Quiz</h2>
+            <div id="quiz" class="space-y-4"></div>
+        </div>
+
+        <div id="tutor-page" class="hidden">
+            <h2 class="text-xl font-semibold mb-4">Tutor AI</h2>
+            <div class="bg-gray-50 p-6 rounded-lg shadow-inner overflow-y-auto h-64 mb-4 flex flex-col space-y-4" id="tutor-chatbox">
+                <p class="text-gray-500 italic">Ask your questions about the uploaded document here...</p>
+            </div>
+            <div class="flex space-x-2">
+                <textarea id="tutor-input" class="flex-grow p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Type your question..."></textarea>
+                <button id="tutor-send-btn" class="px-6 py-3 bg-blue-600 text-white font-medium rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Send</button>
+            </div>
+        </div>
+
+        <div id="argument-checker-page" class="hidden">
+            <h2 class="text-xl font-semibold mb-4">Argument Checker</h2>
+            <p class="text-gray-600 mb-4">Paste your essay below to check its claims against the uploaded document.</p>
+            <div class="mb-4">
+                <textarea id="essay-input" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 h-48" placeholder="Paste your essay here..."></textarea>
+            </div>
+            <button id="check-argument-btn" class="px-6 py-3 bg-green-600 text-white font-medium rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">Check Arguments</button>
+            <div id="argument-results" class="mt-6 bg-gray-50 p-6 rounded-lg shadow-inner">
+            </div>
+        </div>
+    </div>
+
+<script>
+    const uploadForm = document.getElementById("uploadForm");
+    const dropArea = document.getElementById("drop-area");
+    const pdfFile = document.getElementById("pdfFile");
+    const summaryContent = document.getElementById("summaryContent");
+    const flashcardsDiv = document.getElementById("flashcards");
+    const quizDiv = document.getElementById("quiz");
+
+    // New constants for file status
+    const fileNameSpan = document.getElementById("file-name");
+    const uploadStatusContainer = document.getElementById("file-status-container");
+
+    // Tutor elements
+    const tutorInput = document.getElementById("tutor-input");
+    const tutorSendBtn = document.getElementById("tutor-send-btn");
+    const tutorChatbox = document.getElementById("tutor-chatbox");
+
+    // Argument Checker elements
+    const essayInput = document.getElementById("essay-input");
+    const checkArgumentBtn = document.getElementById("check-argument-btn");
+    const argumentResultsDiv = document.getElementById("argument-results");
+
+    // --- Page Navigation Logic ---
+    function showSection(sectionId) {
+        const sections = ['upload-page', 'tutor-page', 'argument-checker-page'];
+        sections.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.classList.add('hidden');
+            }
+        });
+        const targetElement = document.getElementById(sectionId);
+        if (targetElement) {
+            targetElement.classList.remove('hidden');
+        }
+    }
+
+    // Initially show the upload section
+    document.addEventListener('DOMContentLoaded', () => {
+        showSection('upload-page');
+    });
+
+    // --- File Upload Logic ---
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, preventDefaults, false);
+    });
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropArea.addEventListener(eventName, () => dropArea.classList.add('border-blue-500'), false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, () => dropArea.classList.remove('border-blue-500'), false);
+    });
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    dropArea.addEventListener('drop', handleDrop, false);
+
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        pdfFile.files = files;
+        // Trigger the change event to handle UI update and form submission
+        pdfFile.dispatchEvent(new Event('change'));
+    }
+
+    pdfFile.addEventListener('change', () => {
+        if (pdfFile.files.length > 0) {
+            // Show the file name and status
+            fileNameSpan.textContent = pdfFile.files[0].name;
+            uploadStatusContainer.classList.remove("hidden");
+            // Trigger the form submission
+            uploadForm.dispatchEvent(new Event('submit'));
+        }
+    });
+
+    uploadForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const file = pdfFile.files[0];
+        if (!file) {
+            uploadStatusContainer.classList.add("hidden");
+            return alert("Please upload a PDF or Text file.");
+        }
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        // Clear previous content when a new file is uploaded
+        summaryContent.innerHTML = '';
+        flashcardsDiv.innerHTML = '';
+        quizDiv.innerHTML = '';
+        tutorChatbox.innerHTML = '<p class="text-gray-500 italic">Ask your questions about the uploaded document here...</p>'; // Reset chat
+        essayInput.value = ''; // Clear essay input
+        argumentResultsDiv.innerHTML = ''; // Clear argument results
+
+        try {
+            const res = await fetch("http://127.0.0.1:8000/upload", {
+                method: "POST",
+                body: formData
+            });
+
+            if (!res.ok) {
+                const errorData = await res.json();
+                alert(`Error uploading file: ${errorData.detail}`);
+                console.error("Backend Error:", errorData);
+                uploadStatusContainer.classList.add("hidden");
+                return;
+            }
+
+            const data = await res.json();
+            console.log("Upload Response:", data);
+
+            // --- Display Summary ---
+            summaryContent.innerHTML = `<ul class="list-disc pl-6">${
+                (data.summary || []).map(s => `<li>${s}</li>`).join("")
+            }</ul>`;
+
+            // --- Display Flashcards ---
+            flashcardsDiv.innerHTML = "";
+            (data.flashcards || []).forEach(f => {
+                flashcardsDiv.innerHTML += `
+                    <div class="p-3 bg-blue-50 rounded cursor-pointer" onclick="this.querySelector('.flashcard-answer').classList.toggle('hidden')">
+                        <p class="font-bold">Q:</p>
+                        <p>${f.question}</p>
+                        <div class="flashcard-answer hidden">
+                            <p class="font-bold mt-2">A:</p>
+                            <p>${f.answer}</p>
+                        </div>
+                    </div>`;
+            });
+
+            // --- Display Quiz ---
+            quizDiv.innerHTML = "";
+            (data.quiz || []).forEach((q, i) => {
+                quizDiv.innerHTML += `
+                    <div class="p-4 bg-green-50 rounded" id="quiz-q-${i}">
+                        <p class="font-medium">${i+1}. ${q.question}</p>
+                        <div class="mt-2">
+                            ${q.options.map(opt => `
+                                <label class="block">
+                                    <input type="radio" name="q${i}" value="${opt}" class="mr-2"> ${opt}
+                                </label>`).join("")}
+                        </div>
+                        <button type="button" onclick="checkAnswer(${i}, '${q.answer.replace(/'/g, "\\'")}')" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded">Submit</button>
+                        <div id="result-${i}" class="mt-2 font-bold"></div>
+                    </div>`;
+            });
+        } catch (err) {
+            console.error("Error during upload processing:", err);
+            alert("An error occurred during file processing. Please check the console.");
+            uploadStatusContainer.classList.add("hidden");
+        }
+    });
+
+    // Function to check quiz answers
+    function checkAnswer(questionIndex, correctAnswer) {
+        const selectedOption = document.querySelector(`input[name="q${questionIndex}"]:checked`);
+        const resultDiv = document.getElementById(`result-${questionIndex}`);
+
+        if (!selectedOption) {
+            resultDiv.innerHTML = `<span class="text-yellow-600">Please select an option.</span>`;
+            return;
+        }
+
+        const userAnswer = selectedOption.value;
+        if (userAnswer === correctAnswer) {
+            resultDiv.innerHTML = `<span class="text-green-600">✅ Correct!</span>`;
+        } else {
+            resultDiv.innerHTML = `<span class="text-red-600">❌ Incorrect. The correct answer is: ${correctAnswer}</span>`;
+        }
+    }
+
+    // --- Tutor Logic ---
+    tutorSendBtn.addEventListener('click', async () => {
+        const question = tutorInput.value.trim();
+        if (!question) return;
+
+        addMessageToChatbox('user', question); // Add user's question to chat
+        tutorInput.value = ''; // Clear input field
+        tutorSendBtn.disabled = true; // Disable button while waiting for response
+
+        try {
+            const response = await fetch('http://127.0.0.1:8000/tutor', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                // Corrected line: The 'body' needs a proper key-value pair as a string
+                body: `user_prompt=${encodeURIComponent(question)}`
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(`Tutor API error: ${errorData.detail || response.statusText}`);
+            }
+
+            const data = await response.json();
+            addMessageToChatbox('tutor', data.tutor_reply); // Add tutor's response to chat
+        } catch (error) {
+            console.error('Tutor Error:', error);
+            addMessageToChatbox('tutor', `Sorry, I encountered an error: ${error.message}`);
+        } finally {
+            tutorSendBtn.disabled = false; // Re-enable button
+        }
+    });
+
+    function addMessageToChatbox(sender, message) {
+        const messageContainer = document.createElement('div');
+        // Corrected line: Template literal for classes was missing backticks
+        messageContainer.className = `flex ${sender === 'user' ? 'justify-end' : 'justify-start'}`;
+
+        const messageBubble = document.createElement('div');
+        messageBubble.className = `p-3 rounded-lg max-w-lg ${sender === 'user' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-800'}`;
+        messageBubble.textContent = message;
+
+        messageContainer.appendChild(messageBubble);
+        tutorChatbox.appendChild(messageContainer);
+
+        // Scroll to the bottom of the chatbox
+        tutorChatbox.scrollTop = tutorChatbox.scrollHeight;
+    }
+
+    // --- Argument Checker Logic ---
+    checkArgumentBtn.addEventListener('click', async () => {
+        const essay = essayInput.value.trim();
+        if (!essay) return alert("Please paste your essay to check.");
+
+        // Clear previous results and show loading indicator
+        argumentResultsDiv.innerHTML = '<p class="text-gray-500 italic">Analyzing...</p>';
+        checkArgumentBtn.disabled = true; // Disable button while analyzing
+
+        try {
+            const response = await fetch('http://127.0.0.1:8000/argument-checker', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ essay: essay })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(`Argument Checker API error: ${errorData.detail || response.statusText}`);
+            }
+
+            const data = await response.json();
+            displayArgumentResults(data.results);
+        } catch (error) {
+            console.error('Argument Checker Error:', error);
+            argumentResultsDiv.innerHTML = `<p class="text-red-600">An error occurred: ${error.message}</p>`;
+        } finally {
+            checkArgumentBtn.disabled = false; // Re-enable button
+        }
+    });
+
+    function displayArgumentResults(results) {
+        argumentResultsDiv.innerHTML = ''; // Clear previous results
+        if (!results || results.length === 0) {
+            argumentResultsDiv.innerHTML = '<p class="text-gray-500 italic">No claims found or analyzed.</p>';
+            return;
+        }
+
+        results.forEach(result => {
+            const resultDiv = document.createElement('div');
+            resultDiv.className = 'mb-4 p-4 bg-white rounded-md shadow';
+
+            const claimElement = document.createElement('p');
+            claimElement.className = 'font-semibold text-gray-800 mb-2';
+            claimElement.textContent = `Claim: ${result.claim}`;
+            resultDiv.appendChild(claimElement);
+
+            const evaluationElement = document.createElement('p');
+            evaluationElement.className = 'text-sm text-gray-600';
+            // Apply colors based on evaluation keywords
+            let evaluationText = result.evaluation.replace(/SUPPORTED/g, '<strong class="text-green-600">SUPPORTED</strong>');
+            evaluationText = evaluationText.replace(/UNSUPPORTED/g, '<strong class="text-yellow-600">UNSUPPORTED</strong>');
+            evaluationText = evaluationText.replace(/CONTRADICTED/g, '<strong class="text-red-600">CONTRADICTED</strong>');
+            evaluationElement.innerHTML = evaluationText;
+            resultDiv.appendChild(evaluationElement);
+
+            argumentResultsDiv.appendChild(resultDiv);
+        });
+    }
+</script>
+</body>
+</html>
